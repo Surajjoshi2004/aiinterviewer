@@ -14,7 +14,7 @@ exports.authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid token' });
     }
-    req.user = { id: user.id, name: user.name, email: user.email };
+    req.user = { id: user.id, name: user.name, email: user.email, role: user.role || 'interviewee' };
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Unauthorized' });

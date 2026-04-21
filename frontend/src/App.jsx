@@ -15,12 +15,25 @@ const STAGES = [
 ];
 
 const SCORE_DIMENSIONS = [
-  { key: "communicationClarity", label: "Clarity", icon: "◈" },
-  { key: "warmth", label: "Warmth", icon: "◉" },
-  { key: "patience", label: "Patience", icon: "◎" },
-  { key: "abilityToSimplify", label: "Simplicity", icon: "◇" },
-  { key: "englishFluency", label: "Fluency", icon: "◆" },
+  { key: "communicationClarity", label: "Clarity", icon: "C" },
+  { key: "warmth", label: "Warmth", icon: "W" },
+  { key: "patience", label: "Patience", icon: "P" },
+  { key: "abilityToSimplify", label: "Simplicity", icon: "S" },
+  { key: "englishFluency", label: "Fluency", icon: "F" },
 ];
+
+const PORTAL_COPY = {
+  interviewee: {
+    eyebrow: "CANDIDATE ENTRY",
+    title: "TUTOR SCREEN",
+    note: "Use this portal to take the AI screening interview and generate your final report.",
+  },
+  recruiter: {
+    eyebrow: "RECRUITER ACCESS",
+    title: "HIRING DESK",
+    note: "Use this portal to review completed screenings, compare outcomes, and read transcripts.",
+  },
+};
 
 async function apiRequest(path, method = "GET", body, token) {
   const headers = { "Content-Type": "application/json" };
@@ -110,6 +123,13 @@ function normalizeEvaluation(evaluation = {}) {
   };
 }
 
+function normalizeStoredUser(user = {}) {
+  return {
+    ...user,
+    role: user.role === "recruiter" ? "recruiter" : "interviewee",
+  };
+}
+
 function Waveform({ active, color = "var(--accent)" }) {
   return (
     <div className="waveform" aria-hidden="true">
@@ -166,13 +186,51 @@ function ScreenShell({ children, interview = false }) {
   );
 }
 
-function AuthScreen({ onAuth }) {
+function PortalSelectScreen({ onSelectPortal }) {
+  return (
+    <ScreenShell>
+      <div className="center-wrap">
+        <section className="hero-panel portal-panel">
+          <div className="eyebrow-badge">START HERE</div>
+          <h1 className="hero-title">
+            CUEMATH
+            <br />
+            <span>ACCESS</span>
+            <br />
+            POINT
+          </h1>
+
+          <p className="hero-copy">
+            Choose the right login path before entering the platform. Recruiters review reports. Interviewees take the screening.
+          </p>
+
+          <div className="portal-grid">
+            <button type="button" className="portal-card" onClick={() => onSelectPortal("recruiter")}>
+              <div className="portal-kicker">RECRUITER</div>
+              <h2>Review dashboards, scores, and transcripts</h2>
+              <p>Open the hiring dashboard to monitor completed interviews and make faster shortlist decisions.</p>
+            </button>
+
+            <button type="button" className="portal-card portal-card-candidate" onClick={() => onSelectPortal("interviewee")}>
+              <div className="portal-kicker">INTERVIEWEE</div>
+              <h2>Enter the tutor screening experience</h2>
+              <p>Sign in to take the AI-led interview, speak your answers, and receive a saved evaluation report.</p>
+            </button>
+          </div>
+        </section>
+      </div>
+    </ScreenShell>
+  );
+}
+
+function AuthScreen({ portal, onAuth, onBack }) {
   const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const portalCopy = PORTAL_COPY[portal];
 
   const canSubmit = email.trim() && password.trim() && (mode === "login" || name.trim());
 
@@ -185,7 +243,7 @@ function AuthScreen({ onAuth }) {
 
     try {
       const route = mode === "login" ? "/auth/login" : "/auth/register";
-      const body = { email: email.trim(), password: password.trim() };
+      const body = { email: email.trim(), password: password.trim(), role: portal };
       if (mode === "register") {
         body.name = name.trim();
       }
@@ -203,18 +261,20 @@ function AuthScreen({ onAuth }) {
     <ScreenShell>
       <div className="center-wrap">
         <section className="hero-panel">
-          <div className="eyebrow-badge">LIVE SESSION</div>
+          <div className="eyebrow-badge">{portalCopy.eyebrow}</div>
           <h1 className="hero-title">
             CUEMATH
             <br />
-            <span>TUTOR</span>
+            <span>{portalCopy.title.split(" ")[0]}</span>
             <br />
-            SCREEN
+            {portalCopy.title.split(" ").slice(1).join(" ")}
           </h1>
 
           <div className="section-divider">
-            <span>CANDIDATE ENTRY</span>
+            <span>{portal === "recruiter" ? "RECRUITER LOGIN" : "CANDIDATE LOGIN"}</span>
           </div>
+
+          <p className="subtle-note">{portalCopy.note}</p>
 
           <div className="tab-row">
             <button
@@ -236,7 +296,7 @@ function AuthScreen({ onAuth }) {
           <form className="theme-form" onSubmit={handleSubmit}>
             {mode === "register" && (
               <label className="theme-field">
-                <span>Full Name</span>
+                <span>{portal === "recruiter" ? "Recruiter Name" : "Full Name"}</span>
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Riya Sharma" />
               </label>
             )}
@@ -263,14 +323,15 @@ function AuthScreen({ onAuth }) {
 
             {error && <p className="status-error">{error}</p>}
 
-            <button className="primary-cta" type="submit" disabled={!canSubmit || loading}>
-              {loading ? "WORKING..." : mode === "login" ? "ENTER THE ROOM" : "CREATE ACCESS"}
-            </button>
+            <div className="action-row">
+              <button className="primary-cta" type="submit" disabled={!canSubmit || loading}>
+                {loading ? "WORKING..." : mode === "login" ? "ENTER" : "CREATE ACCESS"}
+              </button>
+              <button className="ghost-cta" type="button" onClick={onBack} disabled={loading}>
+                SWITCH PORTAL
+              </button>
+            </div>
           </form>
-
-          <p className="subtle-note">
-            OpenRouter runs on the backend only. Your frontend keeps the cinematic theme without exposing API keys.
-          </p>
         </section>
       </div>
     </ScreenShell>
@@ -298,6 +359,10 @@ function WelcomeScreen({ user, onStart, onLogout }) {
             <div>
               <span className="mini-label">Email</span>
               <strong>{user.email}</strong>
+            </div>
+            <div>
+              <span className="mini-label">Role</span>
+              <strong>{user.role}</strong>
             </div>
           </div>
 
@@ -816,6 +881,231 @@ function ReportScreen({ user, report, transcript, onRestart, onLogout }) {
   );
 }
 
+function RecruiterDashboard({ user, token, onLogout }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [interviews, setInterviews] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
+
+  async function loadInterviews() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await apiRequest("/interviews", "GET", undefined, token);
+      const nextInterviews = (response.interviews || []).map((interview) => ({
+        ...interview,
+        normalizedEvaluation: normalizeEvaluation(interview.evaluation),
+      }));
+
+      setInterviews(nextInterviews);
+      setSelectedId((current) => {
+        if (current && nextInterviews.some((interview) => interview._id === current)) {
+          return current;
+        }
+        return nextInterviews[0]?._id || "";
+      });
+    } catch (err) {
+      setError(err.message || "Unable to load interviews.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadInterviews();
+  }, [token]);
+
+  const selectedInterview = useMemo(
+    () => interviews.find((interview) => interview._id === selectedId) || interviews[0] || null,
+    [interviews, selectedId]
+  );
+
+  const stats = useMemo(() => {
+    return interviews.reduce(
+      (acc, interview) => {
+        const recommendation = interview.normalizedEvaluation.recommendation;
+        acc.total += 1;
+        if (recommendation === "proceed") acc.proceed += 1;
+        if (recommendation === "hold") acc.hold += 1;
+        if (recommendation === "reject") acc.reject += 1;
+        return acc;
+      },
+      { total: 0, proceed: 0, hold: 0, reject: 0 }
+    );
+  }, [interviews]);
+
+  return (
+    <ScreenShell>
+      <div className="dashboard-shell">
+        <header className="dashboard-header">
+          <div>
+            <div className="eyebrow-text">RECRUITER DASHBOARD</div>
+            <h1 className="report-title">HIRING DESK</h1>
+            <p className="report-date">
+              Signed in as {user.name} · {user.email}
+            </p>
+          </div>
+
+          <div className="report-actions">
+            <button className="ghost-cta" type="button" onClick={loadInterviews} disabled={loading}>
+              REFRESH
+            </button>
+            <button className="ghost-cta" type="button" onClick={onLogout}>
+              LOG OUT
+            </button>
+          </div>
+        </header>
+
+        <section className="dashboard-stats">
+          <article className="stat-card">
+            <span className="mini-label">TOTAL</span>
+            <strong>{stats.total}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="mini-label">PROCEED</span>
+            <strong>{stats.proceed}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="mini-label">HOLD</span>
+            <strong>{stats.hold}</strong>
+          </article>
+          <article className="stat-card">
+            <span className="mini-label">REJECT</span>
+            <strong>{stats.reject}</strong>
+          </article>
+        </section>
+
+        {error && <p className="status-error">{error}</p>}
+
+        <div className="dashboard-grid">
+          <aside className="dashboard-list">
+            <div className="section-title">COMPLETED INTERVIEWS</div>
+            {loading ? (
+              <div className="status-line">LOADING INTERVIEWS...</div>
+            ) : interviews.length === 0 ? (
+              <div className="status-line">No saved interviews yet.</div>
+            ) : (
+              interviews.map((interview) => {
+                const evaluation = interview.normalizedEvaluation;
+                return (
+                  <button
+                    key={interview._id}
+                    type="button"
+                    className={`interview-list-card ${selectedInterview?._id === interview._id ? "is-active" : ""}`}
+                    onClick={() => setSelectedId(interview._id)}
+                  >
+                    <div className="interview-list-top">
+                      <strong>{interview.candidateName}</strong>
+                      <span className={`recommendation-pill recommendation-${evaluation.recommendation}`}>
+                        {evaluation.recommendation}
+                      </span>
+                    </div>
+                    <p>{evaluation.overallSummary}</p>
+                    <div className="interview-list-meta">
+                      {new Date(interview.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </aside>
+
+          <section className="dashboard-detail">
+            {!selectedInterview ? (
+              <div className="status-line">Select an interview to view its report.</div>
+            ) : (
+              <>
+                <header className="report-header">
+                  <div>
+                    <div className="eyebrow-text">CANDIDATE REPORT</div>
+                    <h2 className="hero-title hero-title-small">{selectedInterview.candidateName.toUpperCase()}</h2>
+                    <p className="report-date">
+                      Saved{" "}
+                      {new Date(selectedInterview.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+
+                  <div className={`verdict-badge verdict-${selectedInterview.normalizedEvaluation.recommendation}`}>
+                    {selectedInterview.normalizedEvaluation.recommendation.toUpperCase()}
+                  </div>
+                </header>
+
+                <section className="report-section">
+                  <div className="section-title">SUMMARY</div>
+                  <p className="summary-copy">{selectedInterview.normalizedEvaluation.overallSummary}</p>
+                  <p className="summary-subcopy">{selectedInterview.normalizedEvaluation.verdictReason}</p>
+                </section>
+
+                <section className="report-section">
+                  <div className="section-title">DIMENSION SCORES</div>
+                  <div className="score-grid-theme">
+                    {SCORE_DIMENSIONS.map((dimension) => {
+                      const entry = selectedInterview.normalizedEvaluation.scores?.[dimension.key] || { score: 0, reasoning: "" };
+                      return (
+                        <article key={dimension.key} className="score-card-theme">
+                          <div className="score-label">
+                            {dimension.icon} {dimension.label.toUpperCase()}
+                          </div>
+                          <ScoreRing score={entry.score} />
+                          <p className="score-reasoning">{entry.reasoning}</p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className="report-duo">
+                  <article className="list-card">
+                    <div className="section-title">STRENGTHS</div>
+                    {selectedInterview.normalizedEvaluation.strengths?.length ? (
+                      selectedInterview.normalizedEvaluation.strengths.map((item, index) => (
+                        <div key={`${item}-${index}`} className="list-row is-positive">
+                          <span>+</span>
+                          <span>{item}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="empty-copy">No strengths were returned.</p>
+                    )}
+                  </article>
+
+                  <article className="list-card">
+                    <div className="section-title">CONCERNS</div>
+                    {selectedInterview.normalizedEvaluation.concerns?.length ? (
+                      selectedInterview.normalizedEvaluation.concerns.map((item, index) => (
+                        <div key={`${item}-${index}`} className="list-row is-negative">
+                          <span>!</span>
+                          <span>{item}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="empty-copy">No concerns were returned.</p>
+                    )}
+                  </article>
+                </section>
+
+                <section className="report-section transcript-card">
+                  <div className="section-title">TRANSCRIPT</div>
+                  <pre>{selectedInterview.transcript}</pre>
+                </section>
+              </>
+            )}
+          </section>
+        </div>
+      </div>
+    </ScreenShell>
+  );
+}
+
 function ErrorScreen({ message, onRetry, onLogout }) {
   return (
     <ScreenShell>
@@ -840,7 +1130,8 @@ function ErrorScreen({ message, onRetry, onLogout }) {
 
 export default function App() {
   const [auth, setAuth] = useState({ user: null, token: "" });
-  const [screen, setScreen] = useState("auth");
+  const [portal, setPortal] = useState("");
+  const [screen, setScreen] = useState("portal");
   const [transcript, setTranscript] = useState("");
   const [report, setReport] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -853,30 +1144,41 @@ export default function App() {
     try {
       const parsed = JSON.parse(saved);
       if (parsed.user && parsed.token) {
-        setAuth(parsed);
-        setScreen("welcome");
+        const user = normalizeStoredUser(parsed.user);
+        setAuth({ user, token: parsed.token });
+        setPortal(user.role);
+        setScreen(user.role === "recruiter" ? "dashboard" : "welcome");
       }
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, []);
 
+  function handleSelectPortal(nextPortal) {
+    setPortal(nextPortal);
+    setError("");
+    setScreen("auth");
+  }
+
   function handleAuth(user, token) {
-    const payload = { user, token };
+    const normalizedUser = normalizeStoredUser(user);
+    const payload = { user: normalizedUser, token };
     setAuth(payload);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    setScreen("welcome");
+    setPortal(normalizedUser.role);
+    setScreen(normalizedUser.role === "recruiter" ? "dashboard" : "welcome");
     setError("");
   }
 
   function handleLogout() {
     localStorage.removeItem(STORAGE_KEY);
     setAuth({ user: null, token: "" });
+    setPortal("");
     setTranscript("");
     setReport(null);
     setStatusMessage("");
     setError("");
-    setScreen("auth");
+    setScreen("portal");
   }
 
   function handleStart() {
@@ -921,11 +1223,21 @@ export default function App() {
 
   return (
     <>
-      {screen === "auth" && <AuthScreen onAuth={handleAuth} />}
-      {screen === "welcome" && auth.user && (
+      {screen === "portal" && <PortalSelectScreen onSelectPortal={handleSelectPortal} />}
+      {screen === "auth" && portal && (
+        <AuthScreen
+          portal={portal}
+          onAuth={handleAuth}
+          onBack={() => {
+            setPortal("");
+            setScreen("portal");
+          }}
+        />
+      )}
+      {screen === "welcome" && auth.user && auth.user.role === "interviewee" && (
         <WelcomeScreen user={auth.user} onStart={handleStart} onLogout={handleLogout} />
       )}
-      {screen === "interview" && auth.user && (
+      {screen === "interview" && auth.user && auth.user.role === "interviewee" && (
         <InterviewScreen
           user={auth.user}
           token={auth.token}
@@ -934,7 +1246,7 @@ export default function App() {
         />
       )}
       {screen === "saving" && <SavingScreen message={statusMessage} />}
-      {screen === "report" && auth.user && report && (
+      {screen === "report" && auth.user && report && auth.user.role === "interviewee" && (
         <ReportScreen
           user={auth.user}
           report={report}
@@ -942,6 +1254,9 @@ export default function App() {
           onRestart={handleStart}
           onLogout={handleLogout}
         />
+      )}
+      {screen === "dashboard" && auth.user && auth.user.role === "recruiter" && (
+        <RecruiterDashboard user={auth.user} token={auth.token} onLogout={handleLogout} />
       )}
       {screen === "error" && <ErrorScreen message={error} onRetry={handleStart} onLogout={handleLogout} />}
     </>
