@@ -42,8 +42,9 @@ async function apiRequest(path, method = "GET", body, token) {
   }
 
   const baseUrl = BASE_API.replace(/\/$/, "");
+  const apiPrefix = "/api";
   const fullPath = path.startsWith("/") ? path : "/" + path;
-  const response = await fetch(`${baseUrl}${fullPath}`, {
+  const response = await fetch(`${baseUrl}${apiPrefix}${fullPath}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
