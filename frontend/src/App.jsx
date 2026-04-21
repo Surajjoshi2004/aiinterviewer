@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEY = "ai-tutor-screener-auth";
-const BASE_API = "/api";
+const BASE_API = import.meta.env.VITE_API_URL || "/api";
 const MIN_INTERVIEW_MINUTES = 5;
 const MAX_INTERVIEW_MINUTES = 10;
 const MAX_QUESTION_COUNT = 6;
