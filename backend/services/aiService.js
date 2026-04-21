@@ -9,6 +9,29 @@ if (!openRouterApiKey) {
   throw new Error('OPENROUTER_API_KEY is required in backend/.env');
 }
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function withRetry(fn, context = 'request') {
+  let lastError;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      const isRetryable = error?.status === 429 || error?.status === 503 || error?.status >= 500;
+      if (isRetryable && attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY_MS * (attempt + 1));
+      }
+    }
+  }
+  throw lastError;
+}
+
 function wrapAiError(error) {
   const status = error?.status || 500;
   const wrappedError = new Error('OpenRouter request failed.');
@@ -62,7 +85,7 @@ async function callOpenRouter(messages, options = {}) {
 }
 
 async function chatResponse(message, history) {
-  try {
+  return withRetry(async () => {
     const messages = [
       { role: 'system', content: interviewerPrompt },
       ...history.map(item => ({
@@ -78,13 +101,11 @@ async function chatResponse(message, history) {
     });
 
     return reply || 'I could not generate a response.';
-  } catch (error) {
-    throw wrapAiError(error);
-  }
+  }, 'chat');
 }
 
 async function evaluateTranscript(transcript) {
-  try {
+  return withRetry(async () => {
     const raw = await callOpenRouter([
       { role: 'system', content: evaluationPrompt },
       { role: 'user', content: `Transcript:\n${transcript}` },
@@ -102,9 +123,7 @@ async function evaluateTranscript(transcript) {
         error: 'Unable to parse evaluation response as JSON. Please check the prompt or API output.',
       };
     }
-  } catch (error) {
-    throw wrapAiError(error);
-  }
+  }, 'evaluation');
 }
 
 module.exports = {

@@ -410,6 +410,13 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
     window.speechSynthesis.speak(utterance);
   }
 
+  function replayLastQuestion() {
+    const lastAssistantMessage = messages.filter((m) => m.role === "assistant").pop();
+    if (lastAssistantMessage) {
+      speakAssistantMessage(lastAssistantMessage.text);
+    }
+  }
+
   useEffect(() => {
     if (!voiceEnabled && typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -450,28 +457,33 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return undefined;
+    console.log("SpeechRecognition available:", !!SpeechRecognition);
+    if (!SpeechRecognition) {
+      setSpeechHint("Voice input not supported in this browser. Use Chrome or Edge.");
+      return undefined;
+    }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onresult = (event) => {
+    const handleResult = (event) => {
       let finalText = "";
       let interimText = "";
 
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      for (let index = 0; index < event.results.length; index += 1) {
         const transcript = event.results[index][0]?.transcript || "";
         if (event.results[index].isFinal) {
-          finalText += transcript;
+          finalText += transcript + " ";
         } else {
           interimText += transcript;
         }
       }
 
       if (finalText) {
-        finalTranscriptRef.current = `${finalTranscriptRef.current} ${finalText}`.trim();
+        const cleaned = finalText.trim().replace(/\s+/g, " ");
+        finalTranscriptRef.current = `${finalTranscriptRef.current} ${cleaned}`.trim();
       }
 
       const nextText = `${finalTranscriptRef.current} ${interimText}`.trim();
@@ -479,20 +491,30 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
       setAnswer(nextText);
     };
 
-    recognition.onerror = () => {
+    const handleError = (event) => {
+      console.error("Speech recognition error:", event.error);
       setIsListening(false);
-      setSpeechHint("The microphone had trouble hearing you. Try again, or quickly fix the transcript below.");
+      setSpeechHint("Mic error: " + event.error + ". Try typing or check mic permission.");
     };
 
-    recognition.onend = () => {
+    const handleEnd = () => {
       setIsListening(false);
+      setSpeechHint("Recording ended. Review your answer or click to speak again.");
     };
+
+    recognition.onresult = handleResult;
+    recognition.onerror = handleError;
+    recognition.onend = handleEnd;
 
     recognitionRef.current = recognition;
     setMicReady(true);
+    console.log("SpeechRecognition initialized, mic ready");
 
     return () => {
-      recognition.stop();
+      try {
+        recognition.stop();
+      } catch {
+      }
       recognitionRef.current = null;
     };
   }, []);
@@ -542,7 +564,7 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
     setSending(true);
     setError("");
     setLiveText("");
-    setSpeechHint("Priya is thinking about your answer...");
+    setSpeechHint("Raj is thinking about your answer...");
 
     try {
       const response = await apiRequest("/chat", "POST", { message: userMessage, history }, token);
@@ -559,31 +581,42 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
 
   function startListening() {
     if (!micReady || loading || sending || isListening) return;
-    finalTranscriptRef.current = answer.trim();
-    setLiveText(answer.trim());
+
+    const currentAnswer = answer.trim();
+    if (currentAnswer) {
+      finalTranscriptRef.current = currentAnswer;
+    }
+
+    setLiveText(currentAnswer);
     setError("");
-    setSpeechHint("Listening now. Answer like you would speak to a real student.");
+    setSpeechHint("Listening now. Speak your answer...");
 
     try {
-      recognitionRef.current?.start();
-      setIsListening(true);
-    } catch {
-      setError("Speech recognition could not start. Please try again.");
-      setSpeechHint("Browser mic access was blocked. Check microphone permission and try again.");
+      const recognition = recognitionRef.current;
+      if (recognition) {
+        recognition.start();
+        setIsListening(true);
+      }
+    } catch (err) {
+      console.error("Start error:", err);
+      setSpeechHint("Mic in use or not ready. Try again or type answer.");
     }
   }
 
   function stopListening() {
-    recognitionRef.current?.stop();
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+    }
     setIsListening(false);
-    setSpeechHint("Transcript captured. Review it quickly, then send.");
+    setSpeechHint("Review your answer, then click SEND REPLY when ready.");
   }
 
   function handleFinish() {
     if (messages.length < 2) return;
 
     const transcript = messages
-      .map((message) => `${message.role === "assistant" ? "Priya" : user.name}: ${message.text}`)
+      .map((message) => `${message.role === "assistant" ? "Raj" : user.name}: ${message.text}`)
       .join("\n");
 
     onComplete(transcript);
@@ -631,7 +664,7 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
           <aside className="interview-sidebar">
             <div className="avatar-panel">
               <div className={`avatar-orb ${sending ? "is-speaking" : ""}`}>P</div>
-              <div className="avatar-name">Priya</div>
+              <div className="avatar-name">Raj</div>
               <div className="avatar-meta">TALENT TEAM</div>
             </div>
 
@@ -658,7 +691,7 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
           <section className="chat-panel">
             <div className="chat-scroll" ref={chatScrollRef}>
               {messages.length === 0 && (
-                <div className="empty-state">Waiting for Priya...</div>
+                <div className="empty-state">Waiting for Raj...</div>
               )}
 
               <article className="bubble-row">
@@ -715,6 +748,15 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
               </label>
 
               <div className="composer-actions">
+                <button
+                  className="ghost-cta"
+                  type="button"
+                  onClick={replayLastQuestion}
+                  disabled={loading || sending || messages.length < 1}
+                  title="Hear the last question again"
+                >
+                  REPLAY QUESTION
+                </button>
                 <button
                   className={`ghost-cta mic-button ${isListening ? "is-recording" : ""}`}
                   type="button"

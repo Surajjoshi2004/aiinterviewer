@@ -2,14 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { requestEvaluation, sendChat } from '../api.js';
 
 const QUESTIONS_LIMIT = 6;
-const introMessage = 'Hello Priya. Begin the interview as a warm Cuemath HR representative and ask the first teaching question.';
+const introMessage = 'Hello Raj. Begin the interview as a warm Cuemath HR representative and ask the first teaching question.';
 
 function Interview({ candidateName, onComplete }) {
   const [currentQuestion, setCurrentQuestion] = useState('Preparing your interview...');
   const [transcript, setTranscript] = useState([]);
   const [history, setHistory] = useState([]);
   const [listening, setListening] = useState(false);
-  const [status, setStatus] = useState('Waiting for the first question from Priya...');
+  const [status, setStatus] = useState('Waiting for the first question from Raj...');
   const [error, setError] = useState(null);
   const [turns, setTurns] = useState(0);
   const recognitionRef = useRef(null);
@@ -70,9 +70,9 @@ function Interview({ candidateName, onComplete }) {
 
   const startInterview = async () => {
     try {
-      setStatus('Connecting with Priya...');
+      setStatus('Connecting with Raj...');
       const aiReply = await sendChat(introMessage, []);
-      appendTranscript('Priya', aiReply);
+      appendTranscript('Raj', aiReply);
       setHistory([{ role: 'assistant', content: aiReply }]);
       setCurrentQuestion(aiReply);
       setStatus('Ready for your first answer.');
@@ -97,24 +97,24 @@ function Interview({ candidateName, onComplete }) {
     appendTranscript(candidateName || 'You', text);
     setTurns((value) => value + 1);
     setHistory(nextHistory);
-    setStatus('Sending your answer to Priya...');
+    setStatus('Sending your answer to Raj...');
 
     try {
       const aiReply = await sendChat(text, nextHistory);
       const updatedHistory = [...nextHistory, { role: 'assistant', content: aiReply }];
       setHistory(updatedHistory);
-      appendTranscript('Priya', aiReply);
+      appendTranscript('Raj', aiReply);
       setCurrentQuestion(aiReply);
-      setStatus('Priya has responded.');
+      setStatus('Raj has responded.');
       speakText(aiReply);
 
       const nextTurnCount = turns + 1;
       if (nextTurnCount >= QUESTIONS_LIMIT) {
-        await finishInterview([...transcript, { speaker: candidateName || 'You', text }, { speaker: 'Priya', text: aiReply }]);
+        await finishInterview([...transcript, { speaker: candidateName || 'You', text }, { speaker: 'Raj', text: aiReply }]);
       }
     } catch (err) {
       console.error(err);
-      setError('Priya is unavailable right now. Please try again later.');
+      setError('Raj is unavailable right now. Please try again later.');
     }
   };
 
@@ -147,14 +147,14 @@ function Interview({ candidateName, onComplete }) {
       <div className="interview-header">
         <div>
           <p className="eyebrow">Live Interview</p>
-          <h2>Priya is listening</h2>
-          <p className="panel-copy">Answer the current question aloud. Priya will respond naturally and ask follow-ups when needed.</p>
+          <h2>Raj is listening</h2>
+          <p className="panel-copy">Answer the current question aloud. Raj will respond naturally and ask follow-ups when needed.</p>
         </div>
         <div className="status-pill">{status}</div>
       </div>
 
       <div className="question-box">
-        <p className="question-label">Priya asks</p>
+        <p className="question-label">Raj asks</p>
         <p className="question-text">{currentQuestion}</p>
       </div>
 
@@ -171,7 +171,7 @@ function Interview({ candidateName, onComplete }) {
         </div>
         <div className="transcript-list">
           {transcript.map((entry, index) => (
-            <div key={index} className={`transcript-line ${entry.speaker === 'Priya' ? 'assistant' : 'candidate'}`}>
+            <div key={index} className={`transcript-line ${entry.speaker === 'Raj' ? 'assistant' : 'candidate'}`}>
               <span className="transcript-speaker">{entry.speaker}</span>
               <p>{entry.text}</p>
             </div>
