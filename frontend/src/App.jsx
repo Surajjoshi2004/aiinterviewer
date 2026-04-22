@@ -139,7 +139,7 @@ function Waveform({ active, color = "var(--accent)" }) {
     <div className="waveform-3d" aria-hidden="true">
       <svg width="70" height="28" viewBox="0 0 70 28">
         {heights.map((h, i) => (
-          <rect key={i} x={i * 5 + 1} y={28 - h} width="3" height={h} fill={active ? (color === "var(--accent)" ? "#F5A623" : "#6B9BD2") : "#333"} rx="1" opacity={active ? 1 : 0.25}>
+          <rect key={i} x={i * 5 + 1} y={28 - h} width="3" height={h} fill={active ? (color === "var(--accent)" ? "#FF4500" : "#6B9BD2") : "#333"} rx="1" opacity={active ? 1 : 0.25}>
             {active && <animate attributeName="height" values={`${h};${h * 1.4};${h}`} dur="0.7s" repeatCount="indefinite" begin={`${i * 0.04}s`}/>}
           </rect>
         ))}
@@ -149,7 +149,7 @@ function Waveform({ active, color = "var(--accent)" }) {
 }
 
 function ScoreRing({ score, max = 5 }) {
-  const color = score >= 4 ? "#4ADE80" : score >= 3 ? "#F5A623" : "#F87171";
+  const color = score >= 4 ? "#4ADE80" : score >= 3 ? "#FF4500" : "#F87171";
   const dashArray = score * 44;
 
   return (
@@ -180,49 +180,49 @@ function PortalSelectScreen({ onSelectPortal }) {
   return (
     <ScreenShell>
       <div className="center-wrap">
-        <section className="hero-panel portal-panel" style={{ padding: '20px 24px', position: 'relative', overflow: 'hidden', minHeight: '180px' }}>
-          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.06 }} viewBox="0 0 400 100">
-            <line x1="0" y1="25" x2="400" y2="25" stroke="#F5A623" strokeWidth="0.3"/>
-            <line x1="0" y1="50" x2="400" y2="50" stroke="#F5A623" strokeWidth="0.3"/>
-            <line x1="0" y1="75" x2="400" y2="75" stroke="#F5A623" strokeWidth="0.3"/>
-            <line x1="100" y1="0" x2="100" y2="100" stroke="#F5A623" strokeWidth="0.3"/>
-            <line x1="200" y1="0" x2="200" y2="100" stroke="#F5A623" strokeWidth="0.3"/>
-            <line x1="300" y1="0" x2="300" y2="100" stroke="#F5A623" strokeWidth="0.3"/>
+        <section className="hero-panel portal-panel portal-panel-shell">
+          <svg className="portal-panel-grid" viewBox="0 0 400 100">
+            <line x1="0" y1="25" x2="400" y2="25" stroke="#FF4500" strokeWidth="0.3"/>
+            <line x1="0" y1="50" x2="400" y2="50" stroke="#FF4500" strokeWidth="0.3"/>
+            <line x1="0" y1="75" x2="400" y2="75" stroke="#FF4500" strokeWidth="0.3"/>
+            <line x1="100" y1="0" x2="100" y2="100" stroke="#FF4500" strokeWidth="0.3"/>
+            <line x1="200" y1="0" x2="200" y2="100" stroke="#FF4500" strokeWidth="0.3"/>
+            <line x1="300" y1="0" x2="300" y2="100" stroke="#FF4500" strokeWidth="0.3"/>
           </svg>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <svg width="40" height="40" viewBox="0 0 72 72" style={{ animation: 'floatY 4s ease-in-out infinite', filter: 'drop-shadow(0 4px 12px rgba(245,166,35,0.2))' }}>
-              <ellipse cx="36" cy="70" rx="24" ry="5" fill="#F5A623" opacity="0.08"/>
-              <polygon points="36,6 60,20 36,34 12,20" fill="#F5A623"/>
+          <div className="portal-brand-row">
+            <svg className="portal-brand-mark" width="40" height="40" viewBox="0 0 72 72">
+              <ellipse cx="36" cy="70" rx="24" ry="5" fill="#FF4500" opacity="0.08"/>
+              <polygon points="36,6 60,20 36,34 12,20" fill="#FF4500"/>
               <polygon points="36,6 60,20 48,27 24,13" fill="#FFD580" opacity="0.3"/>
-              <polygon points="12,20 36,34 36,66 12,52" fill="#8A4800"/>
-              <polygon points="60,20 36,34 36,66 60,52" fill="#CC7B0A"/>
-              <text x="36" y="29" textAnchor="middle" fontFamily="Georgia,serif" fontSize="13" fontWeight="700" fill="#3D1A00" opacity="0.85">C</text>
+              <polygon points="12,20 36,34 36,66 12,52" fill="#FF4500" opacity="0.6"/>
+              <polygon points="60,20 36,34 36,66 60,52" fill="#FF4500"/>
+              <text x="36" y="29" textAnchor="middle" fontFamily="'Playfair Display',Georgia,serif" fontSize="13" fontWeight="700" fill="white" opacity="0.85">C</text>
             </svg>
-            <div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: '22px', letterSpacing: '2px', color: '#E2D9CE', lineHeight: 1 }}>
-                Cue<span style={{ color: '#F5A623' }}>math</span>
+            <div className="portal-brand-copy">
+              <div className="portal-brand-title">
+                Cue<span style={{ color: '#FF4500' }}>math</span>
               </div>
-              <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: '8px', letterSpacing: '2px', color: '#444', marginTop: '2px' }}>TUTOR SCREENING SYSTEM</div>
+              <div className="portal-brand-subtitle">TUTOR SCREENING SYSTEM</div>
             </div>
 
-            <div style={{ position: 'absolute', top: '12px', right: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#4ADE80', animation: 'livePulse 2s ease-in-out infinite' }}/>
-              <span style={{ fontSize: '8px', letterSpacing: '1px', color: '#4ADE80' }}>ONLINE</span>
+            <div className="portal-status-pill">
+              <div className="portal-status-dot" />
+              <span>ONLINE</span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-            <button type="button" style={{ flex: 1, background: '#0D0D0D', border: '1px solid #1E1E1E', borderRadius: '8px', padding: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onClick={() => onSelectPortal("recruiter")} onMouseOver={e => e.currentTarget.style.borderColor = '#F5A623'} onMouseOut={e => e.currentTarget.style.borderColor = '#1E1E1E'}>
-              <span style={{ fontSize: '9px', letterSpacing: '2px', color: '#444' }}>RECRUITER</span>
-              <h2 style={{ color: '#E8E0D4', fontSize: '13px', fontWeight: 500, margin: 0 }}>Review dashboards</h2>
-              <p style={{ color: '#666', fontSize: '11px', margin: 0 }}>Monitor interviews</p>
+          <div className="portal-choice-grid">
+            <button type="button" className="portal-choice-card" onClick={() => onSelectPortal("recruiter")}>
+              <span className="portal-choice-kicker">RECRUITER</span>
+              <h2 className="portal-choice-title">Review dashboards</h2>
+              <p className="portal-choice-copy">Monitor interviews</p>
             </button>
 
-            <button type="button" style={{ flex: 1, background: '#0D0D0D', border: '1px solid #1E1E1E', borderRadius: '8px', padding: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', transition: 'all 0.2s' }} onClick={() => onSelectPortal("interviewee")} onMouseOver={e => e.currentTarget.style.borderColor = '#F5A623'} onMouseOut={e => e.currentTarget.style.borderColor = '#1E1E1E'}>
-              <span style={{ fontSize: '9px', letterSpacing: '2px', color: '#444' }}>INTERVIEWEE</span>
-              <h2 style={{ color: '#E8E0D4', fontSize: '13px', fontWeight: 500, margin: 0 }}>Take screening</h2>
-              <p style={{ color: '#666', fontSize: '11px', margin: 0 }}>AI-led interview</p>
+            <button type="button" className="portal-choice-card" onClick={() => onSelectPortal("interviewee")}>
+              <span className="portal-choice-kicker">INTERVIEWEE</span>
+              <h2 className="portal-choice-title">Take screening</h2>
+              <p className="portal-choice-copy">AI-led interview</p>
             </button>
           </div>
         </section>
@@ -404,18 +404,50 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
   const recognitionRef = useRef(null);
   const finalTranscriptRef = useRef("");
   const chatScrollRef = useRef(null);
+  const voicesReadyRef = useRef(false);
+
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+
+    const loadVoices = () => {
+      synth.getVoices();
+      voicesReadyRef.current = true;
+    };
+
+    loadVoices();
+    synth.onvoiceschanged = loadVoices;
+  }, []);
 
   function speakAssistantMessage(text) {
     if (!voiceEnabled || typeof window === "undefined" || !window.speechSynthesis || !text) {
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 0.97;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
+    const synth = window.speechSynthesis;
+
+    const trySpeak = () => {
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      utterance.rate = 0.97;
+      utterance.pitch = 1;
+      synth.speak(utterance);
+    };
+
+    if (voicesReadyRef.current) {
+      trySpeak();
+    } else {
+      const checkAndSpeak = () => {
+        if (synth.getVoices().length > 0) {
+          voicesReadyRef.current = true;
+          trySpeak();
+        } else {
+          setTimeout(checkAndSpeak, 50);
+        }
+      };
+      checkAndSpeak();
+    }
   }
 
   function replayLastQuestion() {
@@ -673,13 +705,13 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
             <div className="avatar-panel">
               <div className={`avatar-orb ${sending ? "is-speaking" : ""}`} style={{ width: '64px', height: '64px' }}>
                 <svg width="64" height="64" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="36" fill="none" stroke="#F5A623" strokeWidth=".5" opacity=".15" strokeDasharray="4 5"/>
-                  <circle cx="40" cy="40" r="30" fill="none" stroke="#F5A623" strokeWidth=".4" opacity=".1"/>
-                  <circle cx="40" cy="40" r="26" fill="#180D00"/>
-                  <ellipse cx="32" cy="28" rx="16" ry="12" fill="#F5A623" opacity=".1"/>
-                  <ellipse cx="30" cy="25" rx="9" ry="6" fill="#FFD080" opacity=".15"/>
+                  <circle cx="40" cy="40" r="36" fill="none" stroke="#FF4500" strokeWidth=".5" opacity=".15" strokeDasharray="4 5"/>
+                  <circle cx="40" cy="40" r="30" fill="none" stroke="#FF4500" strokeWidth=".4" opacity=".1"/>
+                  <circle cx="40" cy="40" r="26" fill="#1a1a1a" />
+                  <ellipse cx="32" cy="28" rx="16" ry="12" fill="#FF4500" opacity=".1"/>
+                  <ellipse cx="30" cy="25" rx="9" ry="6" fill="#FF4500" opacity="0.15"/>
                   <ellipse cx="27" cy="22" rx="5" ry="3" fill="white" opacity=".12"/>
-                  <text x="40" y="48" textAnchor="middle" fontFamily="'Bebas Neue',Georgia,serif" fontSize="26" fill="#F5A623" letterSpacing="1">R</text>
+                  <text x="40" y="48" textAnchor="middle" fontFamily="'Playfair Display',Georgia,serif" fontSize="26" fill="white" letterSpacing="1">R</text>
                 </svg>
               </div>
               <div className="avatar-name">Raj</div>
@@ -776,6 +808,7 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
                   REPLAY QUESTION
                 </button>
                 <button
+                  className="mic-trigger"
                   type="button"
                   onClick={isListening ? stopListening : startListening}
                   disabled={!micReady || loading || sending}
@@ -789,14 +822,14 @@ function InterviewScreen({ user, token, onComplete, onCancel }) {
                   }}
                 >
                   <svg width="48" height="56" viewBox="0 0 80 90">
-                    <ellipse cx="40" cy="86" rx="24" ry="4" fill="#F5A623" opacity="0.1"/>
-                    <rect x="32" y="62" width="16" height="24" fill="#CC7B0A" rx="2"/>
+                    <ellipse cx="40" cy="86" rx="24" ry="4" fill="#FF4500" opacity="0.1"/>
+                    <rect x="32" y="62" width="16" height="24" fill="#FF4500" rx="2"/>
                     <path d="M16,50 Q8,50 8,62 L8,70" fill="none" stroke="#CC7B0A" strokeWidth="4" strokeLinecap="round"/>
                     <path d="M72,50 Q80,50 80,62 L80,70" fill="none" stroke="#CC7B0A" strokeWidth="4" strokeLinecap="round"/>
-                    <rect x="22" y="12" width="36" height="50" rx="18" fill={isListening ? "#E74C3C" : "#F5A623"}/>
-                    <line x1="28" y1="28" x2="52" y2="28" stroke="#C06000" strokeWidth="1" opacity="0.4"/>
-                    <line x1="28" y1="36" x2="52" y2="36" stroke="#C06000" strokeWidth="1" opacity="0.4"/>
-                    <circle cx="40" cy="32" r="6" fill="#B85E00" opacity="0.5"/>
+                    <rect x="22" y="12" width="36" height="50" rx="18" fill={isListening ? "#E74C3C" : "#FF4500"}/>
+                    <line x1="28" y1="28" x2="52" y2="28" stroke="#FF4500" strokeWidth="1" opacity="0.4"/>
+                    <line x1="28" y1="36" x2="52" y2="36" stroke="#FF4500" strokeWidth="1" opacity="0.4"/>
+                    <circle cx="40" cy="32" r="6" fill="#FF4500" opacity="0.5"/>
                     {isListening && (
                       <circle cx="40" cy="32" r="14" fill="none" stroke="#E74C3C" strokeWidth="2" opacity="0.6">
                         <animate attributeName="r" values="14;22;14" dur="1s" repeatCount="indefinite"/>
@@ -872,7 +905,7 @@ function ReportScreen({ user, report, transcript, onRestart, onLogout }) {
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: '#1A1000', borderRadius: '6px', border: '1px solid #3D2A00' }}>
-              <span style={{ color: '#F5A623', fontSize: '12px', fontWeight: 600 }}>HOLD</span>
+              <span style={{ color: '#FF4500', fontSize: '12px', fontWeight: 600 }}>HOLD</span>
             </div>
           )}
         </header>
@@ -1120,7 +1153,7 @@ function RecruiterDashboard({ user, token, onLogout }) {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '6px', border: `1px solid ${selectedInterview.normalizedEvaluation.recommendation === 'proceed' ? '#1A5030' : selectedInterview.normalizedEvaluation.recommendation === 'reject' ? '#3D1010' : '#3D2A00'}`, background: selectedInterview.normalizedEvaluation.recommendation === 'proceed' ? '#0A2A18' : selectedInterview.normalizedEvaluation.recommendation === 'reject' ? '#1A0808' : '#1A1000' }}>
-                    <span style={{ color: selectedInterview.normalizedEvaluation.recommendation === 'proceed' ? '#4ADE80' : selectedInterview.normalizedEvaluation.recommendation === 'reject' ? '#F87171' : '#F5A623', fontSize: '11px', fontWeight: 600 }}>
+                    <span style={{ color: selectedInterview.normalizedEvaluation.recommendation === 'proceed' ? '#4ADE80' : selectedInterview.normalizedEvaluation.recommendation === 'reject' ? '#F87171' : '#FF4500', fontSize: '11px', fontWeight: 600 }}>
                       {selectedInterview.normalizedEvaluation.recommendation.toUpperCase()}
                     </span>
                   </div>
